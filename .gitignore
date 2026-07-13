@@ -1,0 +1,51 @@
+# =========================
+# Logs
+# =========================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# =========================
+# Фронтенд (Node.js / React / Vite)
+# =========================
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# =========================
+# Бекенд (Python / FastAPI)
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+.env/
+pip-log.txt
+.pytest_cache/
+
+# =========================
+# Секретні дані / Змінні оточення
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Editor directories and files
+# =========================
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

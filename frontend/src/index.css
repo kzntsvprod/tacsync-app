@@ -1,0 +1,88 @@
+/* 1. Спочатку підключаємо зовнішні шрифти */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* 2. Потім підключаємо Tailwind v4 */
+@import "tailwindcss";
+
+/* 3. Базові стилі та змінні */
+@layer base {
+    :root {
+        --bg-dark: #000000;
+        --bg-panel: #0a0a0c;
+        --text-main: #ededed;
+        --text-muted: #888888;
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --accent: #ffffff;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        -webkit-font-smoothing: antialiased;
+    }
+}
+
+/* 4. Твої кастомні класи */
+@layer utilities {
+    .reveal-on-scroll {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .reveal-on-scroll.is-revealed {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .delay-100 { transition-delay: 100ms; }
+    .delay-200 { transition-delay: 200ms; }
+    .delay-300 { transition-delay: 300ms; }
+
+    .glass-effect {
+        background: rgba(10, 10, 12, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+
+    .tactical-grid {
+        background-size: 30px 30px;
+        background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        opacity: 0;
+    }
+
+    .animate-progress {
+        animation: fillProgress 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-wave {
+        animation: wave 1s ease-in-out infinite;
+    }
+}
+
+/* 5. Анімації та скролбари */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fillProgress {
+    from { stroke-dasharray: 0, 100; }
+}
+
+@keyframes wave {
+    0%, 100% { height: 4px; opacity: 0.5; }
+    50% { height: 16px; opacity: 1; }
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }

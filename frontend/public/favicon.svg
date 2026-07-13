@@ -1,0 +1,14 @@
+<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        path { stroke: #000000; }
+        rect { fill: #000000; }
+        @media (prefers-color-scheme: dark) {
+        path { stroke: #ffffff; }
+        rect { fill: #ffffff; }
+        }
+    </style>
+    <path d="M16 2L30 10V22L16 30L2 22V10L16 2Z" stroke-width="2" stroke-linejoin="miter" />
+    <path d="M16 6V12M16 20V26M6 16H12M20 16H26" stroke-width="2" stroke-linecap="square" />
+    <rect x="14" y="14" width="4" height="4" />
+    <path d="M8 10L11 13M24 10L21 13M8 22L11 19M24 22L21 19" stroke-width="1.5" stroke-linecap="square" />
+</svg>
