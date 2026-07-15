@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import axios from 'axios';
 import { TacsyncLogo, SteamIcon } from './Icons.jsx';
 import {
    AlertCircle,
@@ -9,6 +10,8 @@ import {
    X,
    ShieldCheck,
 } from 'lucide-react';
+
+const API_URL = 'http://localhost:3000/api/users';
 
 export const AuthModal = ({ onClose, onSuccess }) => {
    const [isLogin, setIsLogin] = useState(true);
@@ -26,7 +29,7 @@ export const AuthModal = ({ onClose, onSuccess }) => {
    });
    const [error, setError] = useState(null);
 
-   const handleSubmit = (e) => {
+   const handleSubmit = async (e) => {
       e.preventDefault();
       setError(null);
 
@@ -40,17 +43,44 @@ export const AuthModal = ({ onClose, onSuccess }) => {
       }
 
       setIsLoading(true);
-      setTimeout(() => {
-         setIsLoading(false);
-         if (!isLogin) {
+
+      if (!isLogin) {
+         try {
+            await axios.post(`${API_URL}/send-otp`, {
+               email: formData.email,
+            });
             setStep('verification');
-         } else {
-            onSuccess();
+         } catch (err) {
+            const errMsg =
+               err.response?.data?.message ||
+               'Помилка при надсиланні коду на пошту.';
+            setError(errMsg);
+         } finally {
+            setIsLoading(false);
          }
-      }, 1500);
+      } else {
+         try {
+            const response = await axios.post(`${API_URL}/login`, {
+               email: formData.email,
+               password: formData.password,
+            });
+
+            const data = response.data;
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('nickname', data.nickname);
+
+            onSuccess(data);
+         } catch (err) {
+            const errMsg =
+               err.response?.data?.message || 'Не вдалося увійти в систему.';
+            setError(errMsg);
+         } finally {
+            setIsLoading(false);
+         }
+      }
    };
 
-   const handleVerify = (e) => {
+   const handleVerify = async (e) => {
       e.preventDefault();
       setError(null);
 
@@ -59,11 +89,38 @@ export const AuthModal = ({ onClose, onSuccess }) => {
          return;
       }
 
+      const otpCode = otp.join('');
+
       setIsLoading(true);
-      setTimeout(() => {
+      try {
+         await axios.post(`${API_URL}/register`, {
+            nickname: formData.username,
+            email: formData.email,
+            steam_id: formData.steamId,
+            password: formData.password,
+            otp: otpCode,
+         });
+
+         const loginResponse = await axios.post(`${API_URL}/login`, {
+            email: formData.email,
+            password: formData.password,
+         });
+
+         const loginData = loginResponse.data;
+
+         localStorage.setItem('token', loginData.token);
+         localStorage.setItem('nickname', loginData.nickname);
+
+         onSuccess(loginData);
+      } catch (err) {
+         const errMsg =
+            err.response?.data?.message ||
+            err.response?.data?.error ||
+            'Помилка при перевірці коду.';
+         setError(errMsg);
+      } finally {
          setIsLoading(false);
-         onSuccess();
-      }, 1500);
+      }
    };
 
    const handleOtpChange = (index, value) => {
@@ -116,13 +173,19 @@ export const AuthModal = ({ onClose, onSuccess }) => {
                   <div className="animate-fade-in-up">
                      <div className="flex bg-[#0a0a0c] p-1 rounded-xl mb-8 border border-white/5">
                         <button
-                           onClick={() => setIsLogin(true)}
+                           onClick={() => {
+                              setIsLogin(true);
+                              setError(null);
+                           }}
                            className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${isLogin ? 'bg-white/10 text-white shadow-sm border border-white/10' : 'text-gray-500 hover:text-gray-300 border border-transparent'}`}
                         >
                            Вхід
                         </button>
                         <button
-                           onClick={() => setIsLogin(false)}
+                           onClick={() => {
+                              setIsLogin(false);
+                              setError(null);
+                           }}
                            className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${!isLogin ? 'bg-white/10 text-white shadow-sm border border-white/10' : 'text-gray-500 hover:text-gray-300 border border-transparent'}`}
                         >
                            Реєстрація
