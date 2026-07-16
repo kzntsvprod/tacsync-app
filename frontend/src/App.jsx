@@ -8,6 +8,7 @@ import { DashboardView } from './pages/views/DashboardView.jsx';
 import { LFGView } from './pages/views/LFGView.jsx';
 import { TacticalBoardView } from './pages/views/TacticalBoardView.jsx';
 import { UnderConstructionView } from './pages/views/UnderConstructionView.jsx';
+import { ProfileView } from './pages/views/ProfileView.jsx';
 
 export default function App() {
    return (
@@ -37,6 +38,7 @@ export default function App() {
                         path="friends"
                         element={<UnderConstructionView />}
                      />
+                     <Route path="profile" element={<ProfileView />} />
                   </Route>
                </Route>
 

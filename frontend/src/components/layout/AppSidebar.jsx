@@ -80,20 +80,41 @@ export const AppSidebar = () => {
          </nav>
 
          <div className="p-4 mt-auto border-t border-white/5">
-            <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
-               <img
-                  src={CURRENT_USER.avatar}
-                  alt="User"
-                  className="w-8 h-8 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all"
-               />
-               <div className="flex-1 overflow-hidden">
-                  <p className="text-sm font-medium text-gray-200 truncate">
-                     {CURRENT_USER.name}
-                  </p>
-                  <p className="text-[10px] text-gray-500">PRO Акаунт</p>
-               </div>
-               <Settings className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
-            </div>
+            <NavLink
+               to="/app/profile"
+               className={({ isActive }) =>
+                  `flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer group ${
+                     isActive ? 'bg-white/10' : 'hover:bg-white/5'
+                  }`
+               }
+            >
+               {({ isActive }) => (
+                  <>
+                     <img
+                        src={CURRENT_USER.avatar}
+                        alt="User"
+                        className={`w-8 h-8 rounded-full object-cover transition-all ${
+                           isActive
+                              ? 'grayscale-0'
+                              : 'grayscale group-hover:grayscale-0'
+                        }`}
+                     />
+                     <div className="flex-1 overflow-hidden">
+                        <p className="text-sm font-medium text-gray-200 truncate">
+                           {CURRENT_USER.name}
+                        </p>
+                        <p className="text-[10px] text-gray-500">PRO Акаунт</p>
+                     </div>
+                     <Settings
+                        className={`w-4 h-4 transition-colors ${
+                           isActive
+                              ? 'text-white'
+                              : 'text-gray-600 group-hover:text-white'
+                        }`}
+                     />
+                  </>
+               )}
+            </NavLink>
          </div>
       </aside>
    );
