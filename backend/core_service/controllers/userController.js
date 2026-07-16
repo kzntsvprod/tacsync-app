@@ -25,13 +25,47 @@ exports.sendOtp = async (req, res) => {
       });
 
       const emailHtml = `
-         <div style="font-family: Arial, sans-serif; background-color: #050505; color: #ffffff; padding: 40px; text-align: center; border-radius: 10px;">
-            <h1 style="color: #ffffff;">TACSYNC</h1>
-            <p style="color: #a0a0a0; font-size: 16px;">Ваш код для підтвердження доступу:</p>
-            <div style="background-color: #1a1a1a; padding: 20px; border-radius: 10px; display: inline-block; margin: 20px 0;">
-               <h2 style="margin: 0; font-size: 32px; letter-spacing: 5px; color: #ffffff;">${otpCode}</h2>
+         <div style="background-color: #000000; padding: 60px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #ffffff; -webkit-font-smoothing: antialiased;">
+            <div style="max-width: 480px; margin: 0 auto; background-color: #050505; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
+               
+               <!-- Логотип / Назва -->
+               <div style="margin-bottom: 32px; font-weight: 700; font-size: 16px; letter-spacing: 3px; color: #ffffff;">
+                  TACSYNC
+               </div>
+
+               <!-- Стилізований бейдж -->
+               <div style="display: inline-block; padding: 6px 14px; background-color: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; font-size: 10px; font-weight: 600; letter-spacing: 0.15em; color: #a0a0a0; text-transform: uppercase; margin-bottom: 24px;">
+                  Security System
+               </div>
+
+               <!-- Заголовок -->
+               <h1 style="margin: 0 0 12px 0; font-size: 26px; font-weight: 500; letter-spacing: -0.5px; color: #ffffff;">
+                  Авторизація
+               </h1>
+
+               <!-- Опис -->
+               <p style="margin: 0 0 32px 0; color: #888888; font-size: 15px; line-height: 1.6; font-weight: 300;">
+                  Використайте цей одноразовий код для входу в систему. Нікому не передавайте ці дані.
+               </p>
+
+               <!-- Блок з кодом (імітація віджета) -->
+               <div style="background: linear-gradient(145deg, #0a0a0c, #050505); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 30px; margin-bottom: 32px;">
+                  <div style="font-size: 46px; font-weight: 400; letter-spacing: 16px; color: #ffffff; text-align: center; margin-right: -16px;">
+                     ${otpCode}
+                  </div>
+               </div>
+
+               <!-- Футер листа -->
+               <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 24px;">
+                  <p style="margin: 0 0 8px 0; color: #555555; font-size: 12px; font-weight: 300;">
+                     Код дійсний протягом <span style="color: #888888;">5 хвилин</span>.
+                  </p>
+                  <p style="margin: 0; color: #444444; font-size: 12px; font-weight: 300;">
+                     Якщо ви не робили цей запит, просто проігноруйте цей лист.
+                  </p>
+               </div>
+
             </div>
-            <p style="color: #a0a0a0; font-size: 14px;">Код дійсний 5 хвилин.</p>
          </div>
       `;
 
