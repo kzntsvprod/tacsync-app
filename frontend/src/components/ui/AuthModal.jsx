@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import axios from 'axios';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { TacsyncLogo, SteamIcon } from './Icons.jsx';
 import {
    AlertCircle,
@@ -16,6 +17,8 @@ import {
 const API_URL = 'http://localhost:3000/api/users';
 
 export const AuthModal = ({ onClose, onSuccess }) => {
+   const { login } = useAuth();
+
    const [isLogin, setIsLogin] = useState(true);
    const [isLoading, setIsLoading] = useState(false);
    const [showPassword, setShowPassword] = useState(false);
@@ -69,8 +72,8 @@ export const AuthModal = ({ onClose, onSuccess }) => {
             });
 
             const data = response.data;
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('nickname', data.nickname);
+
+            login(data.token, data.nickname);
 
             onSuccess(data);
          } catch (err) {
@@ -111,8 +114,7 @@ export const AuthModal = ({ onClose, onSuccess }) => {
 
          const loginData = loginResponse.data;
 
-         localStorage.setItem('token', loginData.token);
-         localStorage.setItem('nickname', loginData.nickname);
+         login(loginData.token, loginData.nickname);
 
          onSuccess(loginData);
       } catch (err) {
