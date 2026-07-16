@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom';
 import { TacsyncLogo } from '../ui/Icons.jsx';
 import { CURRENT_USER } from '../../config/mockData.js';
 import {
@@ -9,7 +10,7 @@ import {
    Users,
 } from 'lucide-react';
 
-export const AppSidebar = ({ activeTab, setActiveTab }) => {
+export const AppSidebar = () => {
    const navItems = [
       { id: 'dashboard', icon: Home, label: 'Огляд' },
       { id: 'lfg', icon: Search, label: 'Пошук гри' },
@@ -37,36 +38,43 @@ export const AppSidebar = ({ activeTab, setActiveTab }) => {
          <nav className="flex-1 px-3 py-4 space-y-1">
             {navItems.map((item) => {
                const Icon = item.icon;
-               const isActive = activeTab === item.id;
                return (
-                  <button
+                  <NavLink
                      key={item.id}
-                     onClick={() => setActiveTab(item.id)}
-                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${
-                        isActive
-                           ? 'bg-white/10 text-white'
-                           : 'text-gray-500 hover:bg-white/5 hover:text-gray-300'
-                     }`}
+                     to={`/app/${item.id}`}
+                     className={({ isActive }) =>
+                        `w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${
+                           isActive
+                              ? 'bg-white/10 text-white'
+                              : 'text-gray-500 hover:bg-white/5 hover:text-gray-300'
+                        }`
+                     }
                   >
-                     <div className="flex items-center gap-3">
-                        <Icon
-                           className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-500'}`}
-                           strokeWidth={2}
-                        />
-                        {item.label}
-                     </div>
-                     {item.badge && (
-                        <span
-                           className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded ${
-                              isActive
-                                 ? 'bg-white text-black'
-                                 : 'bg-white/10 text-gray-400'
-                           }`}
-                        >
-                           {item.badge}
-                        </span>
+                     {({ isActive }) => (
+                        <>
+                           <div className="flex items-center gap-3">
+                              <Icon
+                                 className={`w-4 h-4 ${
+                                    isActive ? 'text-white' : 'text-gray-500'
+                                 }`}
+                                 strokeWidth={2}
+                              />
+                              {item.label}
+                           </div>
+                           {item.badge && (
+                              <span
+                                 className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded ${
+                                    isActive
+                                       ? 'bg-white text-black'
+                                       : 'bg-white/10 text-gray-400'
+                                 }`}
+                              >
+                                 {item.badge}
+                              </span>
+                           )}
+                        </>
                      )}
-                  </button>
+                  </NavLink>
                );
             })}
          </nav>
