@@ -1,8 +1,10 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/sendEmail');
+const axios = require('axios');
 
 const SECRET_KEY = process.env.JWT_SECRET;
+const STEAM_KEY = process.env.STEAM_API_KEY;
 
 const otpStore = new Map();
 
@@ -82,6 +84,38 @@ exports.sendOtp = async (req, res) => {
    }
 };
 
+exports.verifyAndRegister = async (req, res) => {
+   const { steamId } = req.body;
+
+   const steamIdRegex = /^7656119[0-9]{10}$/;
+   const STEAM_API_URL = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${STEAM_KEY}&steamids=${steamId}`;
+
+   if (!steamIdRegex.test(steamId)) {
+      return res.status(400).json({
+         message:
+            'Невірний формат Steam ID. Це має бути число з 17 цифр (SteamID64).',
+      });
+   }
+
+   try {
+      const response = await axios.get(STEAM_API_URL);
+      const players = response.data.response.players;
+
+      if (players.length === 0) {
+         return res.status(404).json({
+            message: 'Акаунт Steam з таким ID не знайдено.',
+         });
+      }
+
+      res.status(200).json({ message: 'Steam ID дійсний!' });
+   } catch (error) {
+      console.error('Помилка Steam API:', error);
+      res.status(500).json({
+         message: 'Помилка перевірки Steam ID на сервері.',
+      });
+   }
+};
+
 exports.register = async (req, res) => {
    try {
       const { nickname, email, steam_id, password, otp } = req.body;
@@ -94,12 +128,23 @@ exports.register = async (req, res) => {
                'Код не знайдено або термін його дії минув. Спробуйте ще раз.',
          });
       }
+
       if (storedOtpData.code !== otp) {
          return res.status(400).json({ message: 'Невірний код підтвердження' });
       }
+
       if (Date.now() > storedOtpData.expiresAt) {
          otpStore.delete(email);
          return res.status(400).json({ message: 'Час дії коду минув' });
+      }
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+
+      if (!passwordRegex.test(password)) {
+         return res.status(400).json({
+            message:
+               'Пароль занадто простий! Має бути від 6 символів, містити хоча б одну велику та одну маленьку літеру.',
+         });
       }
 
       const newUser = new User({ nickname, email, steam_id, password });
@@ -130,10 +175,23 @@ exports.login = async (req, res) => {
 
       const token = jwt.sign(
          { userId: user._id, steam_id: user.steam_id },
-         SECRET_KEY,
+         process.env.JWT_SECRET,
          { expiresIn: '24h' }
       );
-      res.json({ token, nickname: user.nickname });
+
+      res.json({
+         token,
+         user: {
+            _id: user._id,
+            nickname: user.nickname,
+            email: user.email,
+            avatar: user.avatar,
+            steam_id: user.steam_id,
+            level: user.level,
+            reputation: user.reputation,
+            synergy: user.synergy,
+         },
+      });
    } catch (error) {
       res.status(500).json({
          message: 'Помилка сервера',
@@ -148,5 +206,158 @@ exports.getProfile = async (req, res) => {
       res.json(user);
    } catch (error) {
       res.status(500).json({ message: 'Помилка отримання профілю' });
+   }
+};
+
+exports.deleteUser = async (req, res) => {
+   try {
+      const user = await User.findByIdAndDelete(req.user.userId);
+
+      if (!user)
+         return res.status(404).json({ message: 'Користувача не знайдено' });
+
+      res.status(200).json({ message: 'Користувача успішно видалено' });
+   } catch (error) {
+      res.status(500).json({ message: 'Помилка видалення користувача' });
+   }
+};
+
+exports.changePassword = async (req, res) => {
+   try {
+      const { oldPassword, newPassword } = req.body;
+
+      if (!oldPassword || !newPassword) {
+         return res
+            .status(400)
+            .json({ message: 'Будь ласка, введіть старий та новий пароль' });
+      }
+
+      const user = await User.findById(req.user.userId);
+      if (!user) {
+         return res.status(404).json({ message: 'Користувача не знайдено' });
+      }
+
+      const isMatch = await user.comparePassword(oldPassword);
+      if (!isMatch) {
+         return res.status(400).json({ message: 'Невірний старий пароль' });
+      }
+
+      if (oldPassword === newPassword) {
+         return res
+            .status(400)
+            .json({ message: 'Новий пароль має відрізнятися від старого' });
+      }
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+
+      if (!passwordRegex.test(newPassword)) {
+         return res.status(400).json({
+            message:
+               'Новий пароль занадто простий! Має бути від 6 символів, містити хоча б одну велику та одну маленьку літеру.',
+         });
+      }
+
+      user.password = newPassword;
+
+      await user.save();
+
+      res.status(200).json({ message: 'Пароль успішно змінено' });
+   } catch (error) {
+      console.error('Помилка зміни пароля:', error);
+      res.status(500).json({ message: 'Помилка сервера під час зміни пароля' });
+   }
+};
+
+exports.changeEmail = async (req, res) => {
+   try {
+      const { password, newEmail } = req.body;
+
+      if (!password || !newEmail) {
+         return res
+            .status(400)
+            .json({ message: 'Будь ласка, введіть пароль та новий Email' });
+      }
+
+      const user = await User.findById(req.user.userId);
+      if (!user) {
+         return res.status(404).json({ message: 'Користувача не знайдено' });
+      }
+
+      const isMatch = await user.comparePassword(password);
+      if (!isMatch) {
+         return res.status(400).json({ message: 'Невірний пароль' });
+      }
+
+      if (user.email === newEmail.toLowerCase().trim()) {
+         return res
+            .status(400)
+            .json({ message: 'Новий Email збігається з поточним' });
+      }
+
+      const emailExists = await User.findOne({
+         email: newEmail.toLowerCase().trim(),
+      });
+      if (emailExists) {
+         return res
+            .status(400)
+            .json({ message: 'Цей Email вже використовується іншим акаунтом' });
+      }
+
+      user.email = newEmail.toLowerCase().trim();
+      await user.save();
+
+      res.status(200).json({
+         message: 'Email успішно змінено',
+         email: user.email,
+      });
+   } catch (error) {
+      console.error('Помилка зміни email:', error);
+      res.status(500).json({ message: 'Помилка сервера під час зміни Email' });
+   }
+};
+
+exports.changeAvatar = async (req, res) => {
+   try {
+      const { avatar } = req.body;
+
+      if (!avatar) {
+         return res.status(400).json({ message: 'Зображення не передано' });
+      }
+
+      if (!avatar.startsWith('data:image/jpeg;base64,')) {
+         return res.status(400).json({
+            message: 'Недопустимий формат! Можна завантажувати лише JPEG.',
+         });
+      }
+
+      const base64Data = avatar.replace(/^data:image\/jpeg;base64,/, '');
+
+      const buffer = Buffer.from(base64Data, 'base64');
+      const fileSizeInBytes = buffer.byteLength;
+
+      if (fileSizeInBytes > 2 * 1024 * 1024) {
+         return res.status(400).json({
+            message: 'Файл занадто великий! Максимальний розмір 2 МБ.',
+         });
+      }
+
+      const user = await User.findById(req.user.userId);
+
+      if (!user) {
+         return res.status(404).json({ message: 'Користувача не знайдено' });
+      }
+
+      user.avatar = avatar;
+      await user.save();
+
+      res.status(200).json({
+         message: 'Аватарку успішно оновлено',
+         avatar: user.avatar,
+      });
+   } catch (error) {
+      console.error('Помилка оновлення аватарки:', error);
+      res.status(500).json({
+         message: 'Помилка сервера під час збереження аватарки',
+      });
    }
 };
