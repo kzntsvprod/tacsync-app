@@ -26,10 +26,26 @@ const userSchema = new mongoose.Schema(
          unique: true,
          trim: true,
       },
+      avatar: {
+         type: String,
+         default: '',
+      },
+      level: {
+         type: Number,
+         default: 0,
+      },
+      reputation: {
+         type: Number,
+         default: 0,
+      },
+      synergy: {
+         type: Number,
+         default: 0,
+      },
       password: {
          type: String,
          required: [true, "Пароль є обов'язковим"],
-         minlength: [6, 'Пароль має бути не менше ніж 6 символів'],
+         minlength: [8, 'Пароль має бути не менше ніж 6 символів'],
       },
    },
    {

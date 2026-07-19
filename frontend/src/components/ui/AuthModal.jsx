@@ -48,6 +48,16 @@ export const AuthModal = ({ onClose, onSuccess }) => {
          return;
       }
 
+      if (!isLogin) {
+         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+         if (!passwordRegex.test(formData.password)) {
+            setError(
+               'Пароль має містити щонайменше 8 символів, одну велику та одну маленьку літеру.'
+            );
+            return;
+         }
+      }
+
       setIsLoading(true);
 
       if (!isLogin) {
@@ -55,11 +65,12 @@ export const AuthModal = ({ onClose, onSuccess }) => {
             await axios.post(`${API_URL}/send-otp`, {
                email: formData.email,
             });
+
             setStep('verification');
          } catch (err) {
             const errMsg =
                err.response?.data?.message ||
-               'Помилка при надсиланні коду на пошту.';
+               'Помилка при перевірці даних або надсиланні коду.';
             setError(errMsg);
          } finally {
             setIsLoading(false);
@@ -73,7 +84,7 @@ export const AuthModal = ({ onClose, onSuccess }) => {
 
             const data = response.data;
 
-            login(data.token, data.nickname);
+            login(data.token, data.user);
 
             onSuccess(data);
          } catch (err) {
@@ -99,7 +110,7 @@ export const AuthModal = ({ onClose, onSuccess }) => {
 
       setIsLoading(true);
       try {
-         await axios.post(`${API_URL}/register`, {
+         const res = await axios.post(`${API_URL}/register`, {
             nickname: formData.username,
             email: formData.email,
             steam_id: formData.steamId,
@@ -107,14 +118,14 @@ export const AuthModal = ({ onClose, onSuccess }) => {
             otp: otpCode,
          });
 
-         const loginResponse = await axios.post(`${API_URL}/login`, {
+         const response = await axios.post(`${API_URL}/login`, {
             email: formData.email,
             password: formData.password,
          });
 
-         const loginData = loginResponse.data;
+         const data = response.data;
 
-         login(loginData.token, loginData.nickname);
+         login(data.token, data.user);
 
          onSuccess(loginData);
       } catch (err) {

@@ -14,11 +14,60 @@ import {
 
 import { SteamIcon } from '../../components/ui/Icons.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useRef } from 'react';
+import axios from 'axios';
 
 export const ProfileView = () => {
-   const { user, logout } = useAuth();
+   const { user, logout, deleteUser, setUser } = useAuth();
+   const fileInputRef = useRef(null);
 
    if (!user) return null;
+
+   const handleButtonClick = () => {
+      fileInputRef.current.click();
+   };
+
+   const convertToBase64 = (file) => {
+      return new Promise((resolve, reject) => {
+         const fileReader = new FileReader();
+         fileReader.readAsDataURL(file);
+
+         fileReader.onload = () => resolve(fileReader.result);
+         fileReader.onerror = (error) => reject(error);
+      });
+   };
+
+   const uploadAvatar = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+         return;
+      }
+
+      if (file.type !== 'image/jpeg') {
+         if (fileInputRef.current) fileInputRef.current.value = null;
+         return;
+      }
+
+      try {
+         const base64 = await convertToBase64(file);
+
+         const response = await axios.patch(
+            'http://localhost:3000/api/users/profile/avatar',
+            { avatar: base64 },
+            {
+               headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
+               },
+            }
+         );
+
+         setUser((prev) => ({ ...prev, avatar: response.data.avatar }));
+      } catch (error) {
+         console.error('Помилка:', error.response?.data?.message);
+      }
+   };
 
    return (
       <div className="h-[calc(100vh-9rem)] w-full flex items-center justify-center animate-fade-in-up overflow-hidden">
@@ -31,7 +80,17 @@ export const ProfileView = () => {
                         className="w-full h-full object-cover"
                         alt="profile"
                      />
-                     <button className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm cursor-pointer">
+                     <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={uploadAvatar}
+                     />
+                     <button
+                        onClick={handleButtonClick}
+                        className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm cursor-pointer"
+                     >
                         <Edit3
                            className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
                            strokeWidth={1.5}
@@ -45,7 +104,7 @@ export const ProfileView = () => {
                      <div>
                         <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
                            <h2 className="text-3xl font-bold text-white tracking-tight">
-                              {user.name}
+                              {user.nickname}
                            </h2>
                            <span className="bg-white text-black text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
                               PRO
@@ -53,7 +112,7 @@ export const ProfileView = () => {
                         </div>
                         <div className="flex items-center justify-center md:justify-start gap-2 text-sm text-gray-400">
                            <SteamIcon className="w-4 h-4 opacity-70" />
-                           <span>ID: 76561198012345678</span>
+                           <span>ID: {user.steam_id}</span>
                         </div>
                      </div>
                   </div>
@@ -67,7 +126,7 @@ export const ProfileView = () => {
                            </span>
                         </div>
                         <span className="text-2xl font-semibold text-white">
-                           {user.level || 42}
+                           {user.level}
                         </span>
                      </div>
 
@@ -79,7 +138,7 @@ export const ProfileView = () => {
                            </span>
                         </div>
                         <span className="text-2xl font-semibold text-white">
-                           {user.reputation || 4.9}
+                           {user.reputation}
                         </span>
                      </div>
 
@@ -94,7 +153,7 @@ export const ProfileView = () => {
                            </span>
                         </div>
                         <span className="text-2xl font-semibold text-emerald-400">
-                           94%
+                           {user.synergy}
                         </span>
                      </div>
                   </div>
@@ -124,13 +183,13 @@ export const ProfileView = () => {
                                  Email адреса
                               </p>
                               <p className="text-[13px] text-gray-500">
-                                 {user.email || 'alex.tactics@mail.com'}
+                                 {user.email}
                               </p>
                            </div>
                         </div>
-                        <span className="text-[10px] uppercase tracking-wider font-bold bg-white/5 text-gray-300 px-2 py-1 rounded">
-                           Підтверджено
-                        </span>
+                        <button className="text-[13px] font-medium text-gray-400 hover:text-white transition-all duration-300 cursor-pointer hover:bg-white/5 px-3 py-1.5 rounded-lg active:scale-95">
+                           Змінити
+                        </button>
                      </div>
 
                      <div className="flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/5 hover:border-white/10 transition-colors">
@@ -184,7 +243,10 @@ export const ProfileView = () => {
                         <ChevronRight className="w-4 h-4 text-gray-600 group-hover/btn:text-white transition-colors" />
                      </button>
 
-                     <button className="w-full flex items-center justify-between p-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 hover:border-red-500/30 transition-all duration-300 group/delete text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99]">
+                     <button
+                        onClick={deleteUser}
+                        className="w-full flex items-center justify-between p-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 hover:border-red-500/30 transition-all duration-300 group/delete text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+                     >
                         <div className="flex items-center gap-4 text-red-400/80 group-hover/delete:text-red-400 transition-colors">
                            <Trash2 className="w-5 h-5" strokeWidth={1.5} />
                            <div>

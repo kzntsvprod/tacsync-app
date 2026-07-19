@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { TacsyncLogo } from '../ui/Icons.jsx';
-import { CURRENT_USER } from '../../config/mockData.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import {
    Home,
    Map,
@@ -23,6 +23,8 @@ export const AppSidebar = () => {
       { id: 'messages', icon: MessageSquare, label: 'Повідомлення' },
       { id: 'friends', icon: Users, label: 'Команда' },
    ];
+
+   const { user, logout, deleteUser, setUser } = useAuth();
 
    return (
       <aside className="w-64 bg-[#050505] border-r border-white/5 flex flex-col h-screen sticky top-0 z-40">
@@ -91,7 +93,7 @@ export const AppSidebar = () => {
                {({ isActive }) => (
                   <>
                      <img
-                        src={CURRENT_USER.avatar}
+                        src={user.avatar}
                         alt="User"
                         className={`w-8 h-8 rounded-full object-cover transition-all ${
                            isActive
@@ -101,7 +103,7 @@ export const AppSidebar = () => {
                      />
                      <div className="flex-1 overflow-hidden">
                         <p className="text-sm font-medium text-gray-200 truncate">
-                           {CURRENT_USER.name}
+                           {user.nickname}
                         </p>
                         <p className="text-[10px] text-gray-500">PRO Акаунт</p>
                      </div>
