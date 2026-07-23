@@ -31,7 +31,6 @@ export const AuthModal = ({ onClose, onSuccess }) => {
       email: '',
       password: '',
       username: '',
-      steamId: '',
    });
    const [error, setError] = useState(null);
 
@@ -42,7 +41,7 @@ export const AuthModal = ({ onClose, onSuccess }) => {
       if (
          !formData.email.trim() ||
          !formData.password.trim() ||
-         (!isLogin && (!formData.username.trim() || !formData.steamId.trim()))
+         (!isLogin && !formData.username.trim())
       ) {
          setError("Помилка доступу: заповніть всі обов'язкові поля.");
          return;
@@ -110,10 +109,9 @@ export const AuthModal = ({ onClose, onSuccess }) => {
 
       setIsLoading(true);
       try {
-         const res = await axios.post(`${API_URL}/register`, {
+         await axios.post(`${API_URL}/register`, {
             nickname: formData.username,
             email: formData.email,
-            steam_id: formData.steamId,
             password: formData.password,
             otp: otpCode,
          });
@@ -127,7 +125,7 @@ export const AuthModal = ({ onClose, onSuccess }) => {
 
          login(data.token, data.user);
 
-         onSuccess(loginData);
+         onSuccess(data);
       } catch (err) {
          const errMsg =
             err.response?.data?.message ||
@@ -275,26 +273,14 @@ export const AuthModal = ({ onClose, onSuccess }) => {
                            }`}
                         >
                            <div className="overflow-hidden flex flex-col gap-4">
-                              <div className="relative group pt-1">
-                                 <User className="absolute left-4 top-[calc(50%+2px)] -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-white transition-colors duration-300 z-10" />
+                              <div className="relative group py-1">
+                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-white transition-colors duration-300 z-10" />
                                  <input
                                     type="text"
                                     name="username"
                                     value={formData.username}
                                     onChange={handleChange}
                                     placeholder="Ім'я гравця (Nickname)"
-                                    className={`${inputClasses} pr-4`}
-                                    tabIndex={isLogin ? -1 : 0}
-                                 />
-                              </div>
-                              <div className="relative group pb-1">
-                                 <SteamIcon className="absolute left-4 top-[calc(50%-2px)] -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-white transition-colors duration-300 z-10" />
-                                 <input
-                                    type="text"
-                                    name="steamId"
-                                    value={formData.steamId}
-                                    onChange={handleChange}
-                                    placeholder="Steam ID"
                                     className={`${inputClasses} pr-4`}
                                     tabIndex={isLogin ? -1 : 0}
                                  />
