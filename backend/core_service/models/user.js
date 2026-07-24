@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema(
       password: {
          type: String,
          required: [true, "Пароль є обов'язковим"],
-         minlength: [8, 'Пароль має бути не менше ніж 6 символів'],
+         minlength: [8, 'Пароль має бути не менше ніж 8 символів'],
       },
    },
    {
