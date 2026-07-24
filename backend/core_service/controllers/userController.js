@@ -228,6 +228,7 @@ exports.register = async (req, res) => {
 
       res.status(201).json({ message: 'Користувача успішно створено!' });
    } catch (error) {
+      console.error(error);
       if (error.code === 11000) {
          return res.status(400).json({
             message: 'Користувач з таким Email або Steam ID вже існує',
