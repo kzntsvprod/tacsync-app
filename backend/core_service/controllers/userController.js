@@ -194,7 +194,7 @@ exports.verifyAndRegister = async (req, res) => {
 
 exports.register = async (req, res) => {
    try {
-      const { nickname, email, steam_id, password, otp } = req.body;
+      const { nickname, email, password, otp } = req.body;
 
       const storedOtpData = otpStore.get(email);
 
@@ -223,7 +223,7 @@ exports.register = async (req, res) => {
          });
       }
 
-      const newUser = new User({ nickname, email, steam_id, password });
+      const newUser = new User({ nickname, email, password });
       await newUser.save();
 
       res.status(201).json({ message: 'Користувача успішно створено!' });

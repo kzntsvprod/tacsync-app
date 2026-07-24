@@ -22,9 +22,9 @@ const userSchema = new mongoose.Schema(
       },
       steam_id: {
          type: String,
-         required: [true, "Steam ID є обов'язковим для заповнення"],
          unique: true,
          trim: true,
+         default: '',
       },
       avatar: {
          type: String,
