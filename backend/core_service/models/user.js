@@ -22,9 +22,9 @@ const userSchema = new mongoose.Schema(
       },
       steam_id: {
          type: String,
-         unique: true,
          trim: true,
-         default: '',
+         unique: true,
+         sparse: true,
       },
       avatar: {
          type: String,
