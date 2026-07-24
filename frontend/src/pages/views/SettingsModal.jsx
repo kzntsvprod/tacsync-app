@@ -56,7 +56,7 @@ export const SettingsModal = ({ isOpen, type, onClose, onSuccess }) => {
             }
 
             const response = await axios.patch(
-               `${API_URL}/change-email`,
+               `${API_URL}/profile/email`,
                {
                   password: formData.password,
                   newEmail: formData.newEmail,
@@ -86,7 +86,7 @@ export const SettingsModal = ({ isOpen, type, onClose, onSuccess }) => {
             }
 
             const response = await axios.patch(
-               `${API_URL}/change-password`,
+               `${API_URL}/profile/password`,
                {
                   oldPassword: formData.password,
                   newPassword: formData.newPassword,
