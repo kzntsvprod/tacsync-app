@@ -93,7 +93,7 @@ export const AppSidebar = () => {
                {({ isActive }) => (
                   <>
                      <img
-                        src={user.avatar}
+                        src={user?.avatar || '/default-avatar.png'}
                         alt="User"
                         className={`w-8 h-8 rounded-full object-cover transition-all ${
                            isActive
@@ -103,7 +103,7 @@ export const AppSidebar = () => {
                      />
                      <div className="flex-1 overflow-hidden">
                         <p className="text-sm font-medium text-gray-200 truncate">
-                           {user.nickname}
+                           {user?.nickname || 'Завантаження...'}
                         </p>
                         <p className="text-[10px] text-gray-500">PRO Акаунт</p>
                      </div>

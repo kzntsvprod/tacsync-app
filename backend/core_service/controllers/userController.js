@@ -314,6 +314,7 @@ exports.login = async (req, res) => {
             level: user.level,
             reputation: user.reputation,
             synergy: user.synergy,
+            passwordChangedAt: user.passwordChangedAt,
          },
       });
    } catch (error) {
@@ -483,5 +484,44 @@ exports.changeAvatar = async (req, res) => {
       res.status(500).json({
          message: 'Помилка сервера під час збереження аватарки',
       });
+   }
+};
+
+exports.steamAuthCallback = (req, res) => {
+   try {
+      if (!req.user) {
+         return res.redirect(
+            `${process.env.CLIENT_URL}/login?error=auth_failed`
+         );
+      }
+
+      const token = jwt.sign(
+         {
+            id: req.user._id,
+            nickname: req.user.nickname,
+            steam_id: req.user.steam_id,
+         },
+         process.env.JWT_SECRET,
+         { expiresIn: '7d' }
+      );
+
+      const userData = encodeURIComponent(
+         JSON.stringify({
+            _id: req.user._id,
+            nickname: req.user.nickname,
+            steam_id: req.user.steam_id,
+            avatar: req.user.avatar,
+            level: req.user.level,
+            reputation: req.user.reputation,
+            synergy: req.user.synergy,
+         })
+      );
+
+      res.redirect(
+         `${process.env.CLIENT_URL}/?token=${token}&user=${userData}`
+      );
+   } catch (error) {
+      console.error('Помилка генерації токена Steam:', error);
+      res.redirect(`${process.env.CLIENT_URL}/login?error=server_error`);
    }
 };

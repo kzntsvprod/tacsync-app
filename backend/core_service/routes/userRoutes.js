@@ -1,4 +1,5 @@
 const express = require('express');
+const passport = require('passport');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const { verifyToken } = require('../middleware/authMiddleware');
@@ -14,4 +15,13 @@ router.delete('/profile', verifyToken, userController.deleteUser);
 router.patch('/profile/password', verifyToken, userController.changePassword);
 router.patch('/profile/email', verifyToken, userController.changeEmail);
 router.patch('/profile/avatar', verifyToken, userController.changeAvatar);
+router.get('/steam', passport.authenticate('steam', { session: false }));
+router.get(
+   '/steam/return',
+   passport.authenticate('steam', {
+      session: false,
+      failureRedirect: `${process.env.CLIENT_URL}/login`,
+   }),
+   userController.steamAuthCallback
+);
 module.exports = router;

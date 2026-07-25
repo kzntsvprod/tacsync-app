@@ -73,6 +73,38 @@ export const ProfileView = () => {
       }
    };
 
+   const formatPasswordChangedDate = (dateString) => {
+      if (!dateString) return 'Пароль не був змінений';
+
+      const date = new Date(dateString);
+      const now = new Date();
+
+      const diffInSeconds = Math.floor((now - date) / 1000);
+      const diffInMinutes = Math.floor(diffInSeconds / 60);
+      const diffInHours = Math.floor(diffInMinutes / 60);
+      const diffInDays = Math.floor(diffInHours / 24);
+
+      if (diffInSeconds < 60) {
+         return 'Щойно';
+      } else if (diffInMinutes < 60) {
+         return 'Декілька хвилин тому';
+      } else if (diffInHours === 1) {
+         return 'Годину тому';
+      } else if (diffInHours < 24 && diffInDays === 0) {
+         return 'Декілька годин тому';
+      } else if (diffInDays === 1) {
+         return 'Вчора';
+      } else {
+         return date.toLocaleDateString('uk-UA', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+         });
+      }
+   };
+
+   console.log(user);
+
    return (
       <>
          <div className="h-[calc(100vh-9rem)] w-full flex items-center justify-center animate-fade-in-up overflow-hidden">
@@ -81,7 +113,7 @@ export const ProfileView = () => {
                   <div className="relative group shrink-0 cursor-pointer">
                      <div className="w-32 h-32 rounded-full overflow-hidden border border-white/10 relative">
                         <img
-                           src={user.avatar}
+                           src={user?.avatar || '/default-avatar.png'}
                            className="w-full h-full object-cover"
                            alt="profile"
                         />
@@ -117,7 +149,9 @@ export const ProfileView = () => {
                            </div>
                            <div className="flex items-center justify-center md:justify-start gap-2 text-sm text-gray-400">
                               <SteamIcon className="w-4 h-4 opacity-70" />
-                              <span>ID: {user.steam_id}</span>
+                              <span>
+                                 ID: {user?.steam_id || 'Завантаження...'}
+                              </span>
                            </div>
                         </div>
                      </div>
@@ -185,7 +219,7 @@ export const ProfileView = () => {
                                     Email адреса
                                  </p>
                                  <p className="text-[13px] text-gray-500">
-                                    {user.email}
+                                    {user?.email || ''}
                                  </p>
                               </div>
                            </div>
@@ -208,7 +242,9 @@ export const ProfileView = () => {
                                     Ключ безпеки
                                  </p>
                                  <p className="text-[13px] text-gray-500">
-                                    Оновлено 12 днів тому
+                                    {formatPasswordChangedDate(
+                                       user?.passwordChangedAt
+                                    )}
                                  </p>
                               </div>
                            </div>

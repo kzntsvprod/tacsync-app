@@ -242,6 +242,11 @@ export const AuthModal = ({ onClose, onSuccess }) => {
       if (error) setError(null);
    };
 
+   const handleSteamLogin = () => {
+      const STEAM_AUTH_URL = `${API_URL}/steam`;
+      window.location.href = STEAM_AUTH_URL;
+   };
+
    const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
    const inputClasses =
@@ -434,7 +439,10 @@ export const AuthModal = ({ onClose, onSuccess }) => {
                            <div className="flex-grow border-t border-white/10"></div>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                           <button className="col-span-2 justify-self-center group flex items-center justify-center gap-2 py-2.5 px-8 rounded-xl bg-[#0a0a0c] hover:bg-white/10 border border-white/5 hover:border-white/30 transition-all text-sm font-medium text-gray-300 hover:text-white">
+                           <button
+                              onClick={handleSteamLogin}
+                              className="col-span-2 justify-self-center group flex items-center justify-center gap-2 py-2.5 px-8 rounded-xl bg-[#0a0a0c] hover:bg-white/10 border border-white/5 hover:border-white/30 transition-all text-sm font-medium text-gray-300 hover:text-white"
+                           >
                               <SteamIcon className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />{' '}
                               Steam
                            </button>

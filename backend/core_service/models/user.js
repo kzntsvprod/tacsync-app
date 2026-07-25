@@ -10,11 +10,16 @@ const userSchema = new mongoose.Schema(
       },
       email: {
          type: String,
-         required: [true, "Email є обов'язковим для заповнення"],
+         required: [
+            function () {
+               return !this.steam_id;
+            },
+            "Email є обов'язковим для заповнення",
+         ],
          unique: true,
+         sparse: true,
          lowercase: true,
          trim: true,
-         index: true,
          match: [
             /^\S+@\S+\.\S+$/,
             'Будь ласка, вкажіть коректну адресу електронної пошти',
@@ -44,8 +49,16 @@ const userSchema = new mongoose.Schema(
       },
       password: {
          type: String,
-         required: [true, "Пароль є обов'язковим"],
+         required: [
+            function () {
+               return !this.steam_id;
+            },
+            "Пароль є обов'язковим",
+         ],
          minlength: [8, 'Пароль має бути не менше ніж 8 символів'],
+      },
+      passwordChangedAt: {
+         type: Date,
       },
    },
    {
@@ -54,12 +67,18 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre('save', async function (next) {
-   if (!this.isModified('password')) return;
+   if (!this.password || !this.isModified('password')) return;
+
    const salt = await bcrypt.genSalt(10);
    this.password = await bcrypt.hash(this.password, salt);
+
+   if (!this.isNew) {
+      this.passwordChangedAt = Date.now() - 1000;
+   }
 });
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
+   if (!this.password) return false;
    return await bcrypt.compare(candidatePassword, this.password);
 };
 
