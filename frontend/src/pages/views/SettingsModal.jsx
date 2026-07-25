@@ -29,6 +29,19 @@ export const SettingsModal = ({ isOpen, type, onClose, onSuccess }) => {
 
    if (!isOpen) return null;
 
+   const handleClose = () => {
+      setError(null);
+      setSuccessMsg(null);
+      setFormData({
+         password: '',
+         newPassword: '',
+         newEmail: '',
+      });
+      setShowOldPassword(false);
+      setShowNewPassword(false);
+      onClose();
+   };
+
    const handleChange = (e) => {
       setFormData({ ...formData, [e.target.name]: e.target.value });
       if (error) setError(null);
@@ -67,7 +80,7 @@ export const SettingsModal = ({ isOpen, type, onClose, onSuccess }) => {
             setSuccessMsg(response.data.message);
             setTimeout(() => {
                onSuccess({ email: response.data.email });
-               onClose();
+               handleClose();
             }, 1500);
          } else if (type === 'password') {
             if (!formData.password || !formData.newPassword) {
@@ -96,7 +109,7 @@ export const SettingsModal = ({ isOpen, type, onClose, onSuccess }) => {
 
             setSuccessMsg(response.data.message);
             setTimeout(() => {
-               onClose();
+               handleClose();
             }, 1500);
          }
       } catch (err) {
@@ -111,12 +124,12 @@ export const SettingsModal = ({ isOpen, type, onClose, onSuccess }) => {
 
    return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in-up">
-         <div className="absolute inset-0" onClick={onClose}></div>
+         <div className="absolute inset-0" onClick={handleClose}></div>
          <div className="relative w-full max-w-md bg-[#050505] border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
             <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
 
             <button
-               onClick={onClose}
+               onClick={handleClose}
                className="absolute top-6 right-6 z-20 text-gray-500 hover:text-white transition-colors p-1.5 bg-black/50 rounded-full backdrop-blur-md border border-white/10 hover:bg-white/10"
             >
                <X className="w-4 h-4" />
