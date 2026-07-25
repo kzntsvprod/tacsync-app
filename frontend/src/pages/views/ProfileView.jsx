@@ -85,25 +85,25 @@ export const ProfileView = () => {
       const diffInDays = Math.floor(diffInHours / 24);
 
       if (diffInSeconds < 60) {
-         return 'Щойно';
+         return 'Щойно змінено';
       } else if (diffInMinutes < 60) {
-         return 'Декілька хвилин тому';
+         return 'Змінено декілька хвилин тому';
       } else if (diffInHours === 1) {
-         return 'Годину тому';
+         return 'Змінено годину тому';
       } else if (diffInHours < 24 && diffInDays === 0) {
-         return 'Декілька годин тому';
+         return 'Змінено декілька годин тому';
       } else if (diffInDays === 1) {
-         return 'Вчора';
+         return 'Змінено вчора';
       } else {
-         return date.toLocaleDateString('uk-UA', {
+         const formattedDate = date.toLocaleDateString('uk-UA', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
          });
+
+         return `Змінено ${formattedDate}`;
       }
    };
-
-   console.log(user);
 
    return (
       <>
