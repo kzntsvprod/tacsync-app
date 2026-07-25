@@ -1,5 +1,13 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext.jsx';
+import {
+   BrowserRouter,
+   Routes,
+   Route,
+   Navigate,
+   useLocation,
+   useNavigate,
+} from 'react-router-dom';
+import { useEffect } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { ProtectedRoute } from './components/layout/ProtectedRoute.jsx';
 import { LandingPage } from './pages/LandingPage.jsx';
 import { AppView } from './pages/AppView.jsx';
@@ -10,10 +18,41 @@ import { TacticalBoardView } from './pages/views/TacticalBoardView.jsx';
 import { UnderConstructionView } from './pages/views/UnderConstructionView.jsx';
 import { ProfileView } from './pages/views/ProfileView.jsx';
 
+const SteamAuthHandler = () => {
+   const { login } = useAuth();
+   const location = useLocation();
+   const navigate = useNavigate();
+
+   useEffect(() => {
+      const params = new URLSearchParams(location.search);
+      const token = params.get('token');
+      const userString = params.get('user');
+
+      if (token && userString) {
+         try {
+            const user = JSON.parse(decodeURIComponent(userString));
+            window.history.replaceState(
+               {},
+               document.title,
+               window.location.pathname
+            );
+            login(token, user);
+            navigate('/app/dashboard', { replace: true });
+         } catch (error) {
+            console.error('Помилка парсингу даних зі Steam:', error);
+            navigate('/', { replace: true });
+         }
+      }
+   }, [location.search, navigate]);
+
+   return null;
+};
+
 export default function App() {
    return (
       <AuthProvider>
          <BrowserRouter>
+            <SteamAuthHandler />
             <Routes>
                <Route path="/" element={<LandingPage />} />
 
