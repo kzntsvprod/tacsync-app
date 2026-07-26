@@ -269,7 +269,7 @@ export const ProfileView = () => {
 
                      <div className="space-y-3 flex-1 relative z-10">
                         <button
-                           onClick={logout}
+                           onClick={() => setActiveModal('logout')}
                            className="w-full flex items-center justify-between p-4 rounded-xl bg-black/40 border border-white/5 hover:bg-white/5 hover:border-white/10 transition-all duration-300 group/btn text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
                         >
                            <div className="flex items-center gap-4 text-gray-400 group-hover/btn:text-white transition-colors">
@@ -287,7 +287,7 @@ export const ProfileView = () => {
                         </button>
 
                         <button
-                           onClick={deleteUser}
+                           onClick={() => setActiveModal('delete')}
                            className="w-full flex items-center justify-between p-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 hover:border-red-500/30 transition-all duration-300 group/delete text-left cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
                         >
                            <div className="flex items-center gap-4 text-red-400/80 group-hover/delete:text-red-400 transition-colors">
@@ -314,6 +314,8 @@ export const ProfileView = () => {
             type={activeModal}
             onClose={() => setActiveModal(null)}
             onSuccess={handleSettingsSuccess}
+            onLogout={logout}
+            onDelete={deleteUser}
          />
       </>
    );
