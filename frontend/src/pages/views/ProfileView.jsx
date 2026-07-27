@@ -154,11 +154,19 @@ export const ProfileView = () => {
                                  PRO
                               </span>
                            </div>
-                           <div className="flex items-center justify-center md:justify-start gap-2 text-sm text-gray-400">
-                              <SteamIcon className="w-4 h-4 opacity-70" />
-                              <span>
-                                 ID: {user?.steam_id || 'Завантаження...'}
-                              </span>
+                           <div className="flex items-center justify-center md:justify-start gap-3">
+                              <div className="flex items-center gap-2 text-sm text-gray-400">
+                                 <SteamIcon className="w-4 h-4 opacity-70" />
+                                 <span>
+                                    ID: {user?.steam_id || 'Завантаження...'}
+                                 </span>
+                              </div>
+                              <button
+                                 onClick={() => {}}
+                                 className="text-[10px] font-bold text-gray-400 hover:text-white border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all duration-300 cursor-pointer px-2.5 py-1 rounded-md active:scale-95 uppercase tracking-wider"
+                              >
+                                 Прив'язати
+                              </button>
                            </div>
                         </div>
                      </div>
