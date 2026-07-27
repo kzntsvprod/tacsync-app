@@ -150,9 +150,6 @@ export const ProfileView = () => {
                               <h2 className="text-3xl font-bold text-white tracking-tight">
                                  {user.nickname}
                               </h2>
-                              <span className="bg-white text-black text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
-                                 PRO
-                              </span>
                            </div>
                            <div className="flex items-center justify-center md:justify-start gap-3">
                               <div className="flex items-center gap-2 text-sm text-gray-400">
