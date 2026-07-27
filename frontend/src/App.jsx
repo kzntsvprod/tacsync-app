@@ -5,12 +5,14 @@ import {
    Navigate,
    useLocation,
    useNavigate,
+   useSearchParams,
 } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { ProtectedRoute } from './components/layout/ProtectedRoute.jsx';
 import { LandingPage } from './pages/LandingPage.jsx';
 import { AppView } from './pages/AppView.jsx';
+import axios from 'axios';
 
 import { DashboardView } from './pages/views/DashboardView.jsx';
 import { LFGView } from './pages/views/LFGView.jsx';
@@ -18,32 +20,56 @@ import { TacticalBoardView } from './pages/views/TacticalBoardView.jsx';
 import { UnderConstructionView } from './pages/views/UnderConstructionView.jsx';
 import { ProfileView } from './pages/views/ProfileView.jsx';
 
-const SteamAuthHandler = () => {
-   const { login } = useAuth();
-   const location = useLocation();
+export const SteamAuthHandler = () => {
+   const [searchParams] = useSearchParams();
    const navigate = useNavigate();
+   const { login } = useAuth();
+
+   const hasProcessed = useRef(false);
 
    useEffect(() => {
-      const params = new URLSearchParams(location.search);
-      const token = params.get('token');
-      const userString = params.get('user');
+      if (hasProcessed.current) return;
 
-      if (token && userString) {
-         try {
-            const user = JSON.parse(decodeURIComponent(userString));
-            window.history.replaceState(
-               {},
-               document.title,
-               window.location.pathname
-            );
-            login(token, user);
-            navigate('/app/dashboard', { replace: true });
-         } catch (error) {
-            console.error('Помилка парсингу даних зі Steam:', error);
-            navigate('/', { replace: true });
+      const token = searchParams.get('token');
+      const tempToken = searchParams.get('tempToken');
+      const userParam = searchParams.get('user');
+
+      if (token && userParam) {
+         // 2. Одразу ставимо прапорець в true
+         hasProcessed.current = true;
+
+         const user = JSON.parse(decodeURIComponent(userParam));
+         login(token, user);
+         sessionStorage.removeItem('pendingSteamEmail');
+         sessionStorage.removeItem('pendingSteamPassword');
+         navigate('/app/dashboard', { replace: true });
+      } else if (tempToken) {
+         hasProcessed.current = true;
+
+         const email = sessionStorage.getItem('pendingSteamEmail');
+         const password = sessionStorage.getItem('pendingSteamPassword');
+
+         if (email && password) {
+            axios
+               .post('http://localhost:3000/api/users/complete-steam', {
+                  email,
+                  password,
+                  tempToken,
+               })
+               .then((res) => {
+                  sessionStorage.removeItem('pendingSteamEmail');
+                  sessionStorage.removeItem('pendingSteamPassword');
+                  login(res.data.token, res.data.user);
+                  navigate('/app/dashboard', { replace: true });
+               })
+               .catch((error) => {
+                  console.error('Помилка реєстрації:', error);
+               });
+         } else {
+            navigate(`/?tempToken=${tempToken}`, { replace: true });
          }
       }
-   }, [location.search, navigate]);
+   }, [searchParams, navigate, login]);
 
    return null;
 };

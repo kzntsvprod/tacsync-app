@@ -214,6 +214,9 @@ exports.register = async (req, res) => {
          return res.status(400).json({ message: 'Час дії коду минув' });
       }
 
+      if (await User.findOne({ email }))
+         return res.status(400).json({ message: 'Користувач уже існує' });
+
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 
       if (!passwordRegex.test(password)) {
@@ -336,10 +339,19 @@ exports.getProfile = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
    try {
-      const user = await User.findByIdAndDelete(req.user.userId);
+      const { password } = req.body;
 
-      if (!user)
+      const user = await User.findById(req.user.userId);
+
+      if (!user) {
          return res.status(404).json({ message: 'Користувача не знайдено' });
+      }
+
+      if (!(await user.comparePassword(password))) {
+         return res.status(401).json({ message: 'Невірно введений пароль' });
+      }
+
+      await User.findByIdAndDelete(req.user.userId);
 
       res.status(200).json({ message: 'Користувача успішно видалено' });
    } catch (error) {
@@ -386,7 +398,12 @@ exports.changePassword = async (req, res) => {
 
       await user.save();
 
-      res.status(200).json({ message: 'Пароль успішно змінено' });
+      const changeUser = await User.findById(req.user.userId);
+
+      res.status(200).json({
+         message: 'Пароль успішно змінено',
+         passwordChangedAt: changeUser.passwordChangedAt,
+      });
    } catch (error) {
       console.error('Помилка зміни пароля:', error);
       res.status(500).json({ message: 'Помилка сервера під час зміни пароля' });
@@ -487,7 +504,7 @@ exports.changeAvatar = async (req, res) => {
    }
 };
 
-exports.steamAuthCallback = (req, res) => {
+exports.steamAuthCallback = async (req, res) => {
    try {
       if (!req.user) {
          return res.redirect(
@@ -495,33 +512,88 @@ exports.steamAuthCallback = (req, res) => {
          );
       }
 
-      const token = jwt.sign(
+      const user = await User.findOne({ steam_id: req.user.steam_id });
+
+      if (user) {
+         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+            expiresIn: '7d',
+         });
+
+         const userData = encodeURIComponent(
+            JSON.stringify({
+               nickname: user.nickname,
+               email: user.email,
+               avatar: user.avatar,
+               steam_id: user.steam_id,
+               level: user.level,
+               reputation: user.reputation,
+               synergy: user.synergy,
+               passwordChangedAt: user.passwordChangedAt,
+            })
+         );
+
+         return res.redirect(
+            `${process.env.CLIENT_URL}/?token=${token}&user=${userData}`
+         );
+      }
+
+      const tempToken = jwt.sign(
          {
-            id: req.user._id,
-            nickname: req.user.nickname,
             steam_id: req.user.steam_id,
+            nickname: req.user.nickname,
+            avatar: req.user.avatar,
          },
          process.env.JWT_SECRET,
-         { expiresIn: '7d' }
+         { expiresIn: '15m' }
       );
 
-      const userData = encodeURIComponent(
-         JSON.stringify({
-            _id: req.user._id,
-            nickname: req.user.nickname,
-            steam_id: req.user.steam_id,
-            avatar: req.user.avatar,
-            level: req.user.level,
-            reputation: req.user.reputation,
-            synergy: req.user.synergy,
-         })
-      );
-
-      res.redirect(
-         `${process.env.CLIENT_URL}/?token=${token}&user=${userData}`
-      );
+      res.redirect(`${process.env.CLIENT_URL}/?tempToken=${tempToken}`);
    } catch (error) {
-      console.error('Помилка генерації токена Steam:', error);
+      console.error('Помилка авторизації Steam:', error);
       res.redirect(`${process.env.CLIENT_URL}/login?error=server_error`);
+   }
+};
+
+exports.completeSteamRegistration = async (req, res) => {
+   try {
+      const { email, password, tempToken } = req.body;
+
+      const decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
+
+      if (await User.findOne({ email })) {
+         return res.status(400).json({ message: 'Користувач уже існує' });
+      }
+
+      const newUser = new User({
+         steam_id: decoded.steam_id,
+         nickname: decoded.nickname,
+         avatar: decoded.avatar,
+         email: email,
+         password: password,
+      });
+
+      await newUser.save();
+
+      const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, {
+         expiresIn: '7d',
+      });
+
+      res.status(201).json({
+         message: 'Реєстрація успішна',
+         token,
+         user: {
+            nickname: newUser.nickname,
+            email: newUser.email,
+            avatar: newUser.avatar,
+            steam_id: newUser.steam_id,
+            level: newUser.level,
+            reputation: newUser.reputation,
+            synergy: newUser.synergy,
+            passwordChangedAt: newUser.passwordChangedAt,
+         },
+      });
+   } catch (error) {
+      console.error('Помилка завершення реєстрації:', error);
+      res.status(500).json({ message: 'Не вдалося завершити реєстрацію' });
    }
 };

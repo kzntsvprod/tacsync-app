@@ -123,8 +123,13 @@ export const SettingsModal = ({
                { headers: { Authorization: `Bearer ${token}` } }
             );
 
+            console.log(response.data.passwordChangedAt);
+
             setSuccessMsg(response.data.message);
             setTimeout(() => {
+               onSuccess({
+                  passwordChangedAt: response.data.passwordChangedAt,
+               });
                handleClose();
             }, 1500);
          } else if (type === 'delete') {

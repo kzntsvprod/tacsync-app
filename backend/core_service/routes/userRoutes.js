@@ -16,6 +16,7 @@ router.patch('/profile/password', verifyToken, userController.changePassword);
 router.patch('/profile/email', verifyToken, userController.changeEmail);
 router.patch('/profile/avatar', verifyToken, userController.changeAvatar);
 router.get('/steam', passport.authenticate('steam', { session: false }));
+router.post('/complete-steam', userController.completeSteamRegistration);
 router.get(
    '/steam/return',
    passport.authenticate('steam', {
