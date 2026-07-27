@@ -71,6 +71,13 @@ export const ProfileView = () => {
       if (data?.email) {
          setUser((prev) => ({ ...prev, email: data.email }));
       }
+
+      if (data?.passwordChangedAt) {
+         setUser((prev) => ({
+            ...prev,
+            passwordChangedAt: data.passwordChangedAt,
+         }));
+      }
    };
 
    const formatPasswordChangedDate = (dateString) => {
@@ -219,7 +226,7 @@ export const ProfileView = () => {
                                     Email адреса
                                  </p>
                                  <p className="text-[13px] text-gray-500">
-                                    {user?.email || ''}
+                                    {user.email}
                                  </p>
                               </div>
                            </div>

@@ -56,17 +56,9 @@ export const SteamBindModal = ({ isOpen, onClose }) => {
 
       setIsLoading(true);
 
-      try {
-         await axios.post(`${API_URL}/steam-prepare`, {
-            email: formData.email,
-            password: formData.password,
-         });
-
-         window.location.href = `${API_URL}/steam`;
-      } catch (err) {
-         setError(err.response?.data?.message || 'Помилка підготовки даних.');
-         setIsLoading(false);
-      }
+      sessionStorage.setItem('pendingSteamEmail', formData.email);
+      sessionStorage.setItem('pendingSteamPassword', formData.password);
+      window.location.href = `${API_URL}/steam`;
    };
 
    const togglePasswordVisibility = () => setShowPassword(!showPassword);
