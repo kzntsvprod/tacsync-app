@@ -14,13 +14,19 @@ import {
 
 import { SteamIcon } from '../../components/ui/Icons.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
 import { SettingsModal } from './SettingsModal.jsx';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+
+const API_URL = 'http://localhost:3000/api/users';
 
 export const ProfileView = () => {
    const { user, logout, deleteUser, setUser } = useAuth();
    const fileInputRef = useRef(null);
+
+   const [searchParams] = useSearchParams();
+   const navigate = useNavigate();
 
    const [activeModal, setActiveModal] = useState(null);
 
@@ -112,6 +118,35 @@ export const ProfileView = () => {
       }
    };
 
+   const handleLinkSteam = () => {
+      window.location.href = `${API_URL}/steam/link`;
+   };
+
+   useEffect(() => {
+      const linkToken = searchParams.get('linkToken');
+
+      if (linkToken) {
+         const authToken = localStorage.getItem('token');
+
+         axios
+            .post(
+               'http://localhost:3000/api/users/steam/link-confirm',
+               { linkToken },
+               { headers: { Authorization: `Bearer ${authToken}` } }
+            )
+            .then((response) => {
+               setUser((prev) => ({
+                  ...prev,
+                  steam_id: response.data.steam_id,
+               }));
+               navigate('/app/profile', { replace: true });
+            })
+            .catch((error) => {
+               console.error('Помилка:', error);
+            });
+      }
+   }, [searchParams, navigate]);
+
    return (
       <>
          <div className="h-[calc(100vh-9rem)] w-full flex items-center justify-center animate-fade-in-up overflow-hidden">
@@ -160,7 +195,7 @@ export const ProfileView = () => {
                                        user.steam_id
                                     ) : (
                                        <button
-                                          onClick={() => {}}
+                                          onClick={handleLinkSteam}
                                           className="text-[10px] font-bold text-gray-400 hover:text-white border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all duration-300 cursor-pointer px-2.5 py-1 rounded-md active:scale-95 uppercase tracking-wider"
                                        >
                                           Прив'язати

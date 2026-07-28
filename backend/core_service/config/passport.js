@@ -38,3 +38,15 @@ passport.use(
       verifyCallback
    )
 );
+
+passport.use(
+   'steam-link',
+   new SteamStrategy(
+      {
+         returnURL: `${process.env.BACKEND_URL}/api/users/steam/link/return`,
+         realm: `${process.env.BACKEND_URL}/`,
+         apiKey: process.env.STEAM_API_KEY,
+      },
+      verifyCallback
+   )
+);

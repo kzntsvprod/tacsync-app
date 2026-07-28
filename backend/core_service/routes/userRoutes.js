@@ -52,4 +52,27 @@ router.get(
 );
 
 router.post('/complete-steam', userController.completeSteamRegistration);
+
+//Привязка Steam_id
+
+router.get(
+   '/steam/link',
+   passport.authenticate('steam-link', { session: false })
+);
+
+router.get(
+   '/steam/link/return',
+   passport.authenticate('steam-link', {
+      session: false,
+      failureRedirect: `${process.env.CLIENT_URL}/app/profile?error=steam_failed`,
+   }),
+   userController.steamLinkCallback
+);
+
+router.post(
+   '/steam/link-confirm',
+   verifyToken,
+   userController.confirmSteamLink
+);
+
 module.exports = router;
