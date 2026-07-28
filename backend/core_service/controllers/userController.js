@@ -6,6 +6,8 @@ const axios = require('axios');
 const SECRET_KEY = process.env.JWT_SECRET;
 const STEAM_KEY = process.env.STEAM_API_KEY;
 
+const PASSW_REGEX = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+
 const otpStore = new Map();
 
 exports.sendOtp = async (req, res) => {
@@ -217,9 +219,7 @@ exports.register = async (req, res) => {
       if (await User.findOne({ email }))
          return res.status(400).json({ message: 'Користувач уже існує' });
 
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-
-      if (!passwordRegex.test(password)) {
+      if (!PASSW_REGEX.test(password)) {
          return res.status(400).json({
             message:
                'Пароль занадто простий! Має бути від 8 символів, містити хоча б одну велику та одну маленьку літеру.',
@@ -271,9 +271,7 @@ exports.resetPassword = async (req, res) => {
          return res.status(400).json({ message: 'Час дії коду минув' });
       }
 
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-
-      if (!passwordRegex.test(newPassword)) {
+      if (!PASSW_REGEX.test(newPassword)) {
          return res.status(400).json({
             message:
                'Новий пароль занадто простий! Має бути від 8 символів, містити хоча б одну велику та одну маленьку літеру.',
@@ -385,9 +383,7 @@ exports.changePassword = async (req, res) => {
             .json({ message: 'Новий пароль має відрізнятися від старого' });
       }
 
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-
-      if (!passwordRegex.test(newPassword)) {
+      if (!PASSW_REGEX.test(newPassword)) {
          return res.status(400).json({
             message:
                'Новий пароль занадто простий! Має бути від 8 символів, містити хоча б одну велику та одну маленьку літеру.',
@@ -504,11 +500,58 @@ exports.changeAvatar = async (req, res) => {
    }
 };
 
-exports.steamAuthCallback = async (req, res) => {
+exports.verifyEmail = async (req, res) => {
+   try {
+      const { email } = req.body;
+
+      const user = await User.findOne({ email });
+
+      if (user) {
+         return res.status(400).json({ message: 'Користувач уже існує' });
+      }
+
+      return res.status(200).json({ message: 'Пошта вільна' });
+   } catch (error) {
+      res.status(500).json({
+         message: 'Помилка сервера під час перевірки пошти',
+      });
+   }
+};
+
+exports.steamRegisterCallback = async (req, res) => {
+   try {
+      if (!req.user) {
+         return res.redirect(`${process.env.CLIENT_URL}/?error=sing_in_failed`);
+      }
+
+      const user = await User.findOne({ steam_id: req.user.steam_id });
+
+      if (user) {
+         return res.redirect(`${process.env.CLIENT_URL}/?error=user_exist`);
+      }
+
+      const tempToken = jwt.sign(
+         {
+            steam_id: req.user.steam_id,
+            nickname: req.user.nickname,
+            avatar: req.user.avatar,
+         },
+         process.env.JWT_SECRET,
+         { expiresIn: '15m' }
+      );
+
+      res.redirect(`${process.env.CLIENT_URL}/?tempToken=${tempToken}`);
+   } catch (error) {
+      console.error('Помилка авторизації Steam:', error);
+      res.redirect(`${process.env.CLIENT_URL}/login?error=server_error`);
+   }
+};
+
+exports.steamLoginCallback = async (req, res) => {
    try {
       if (!req.user) {
          return res.redirect(
-            `${process.env.CLIENT_URL}/login?error=auth_failed`
+            `${process.env.CLIENT_URL}/login?error=login_failed`
          );
       }
 
@@ -536,18 +579,7 @@ exports.steamAuthCallback = async (req, res) => {
             `${process.env.CLIENT_URL}/?token=${token}&user=${userData}`
          );
       }
-
-      const tempToken = jwt.sign(
-         {
-            steam_id: req.user.steam_id,
-            nickname: req.user.nickname,
-            avatar: req.user.avatar,
-         },
-         process.env.JWT_SECRET,
-         { expiresIn: '15m' }
-      );
-
-      res.redirect(`${process.env.CLIENT_URL}/?tempToken=${tempToken}`);
+      res.redirect(`${process.env.CLIENT_URL}/?error=user_not_found`);
    } catch (error) {
       console.error('Помилка авторизації Steam:', error);
       res.redirect(`${process.env.CLIENT_URL}/login?error=server_error`);
@@ -562,6 +594,13 @@ exports.completeSteamRegistration = async (req, res) => {
 
       if (await User.findOne({ email })) {
          return res.status(400).json({ message: 'Користувач уже існує' });
+      }
+
+      if (!PASSW_REGEX.test(password)) {
+         return res.status(400).json({
+            message:
+               'Новий пароль занадто простий! Має бути від 8 символів, містити хоча б одну велику та одну маленьку літеру.',
+         });
       }
 
       const newUser = new User({

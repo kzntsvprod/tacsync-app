@@ -11,18 +11,45 @@ router.get('/profile', verifyToken, userController.getProfile);
 router.post('/send-otp', userController.sendOtp);
 router.post('/send-reset-otp', userController.sendResetOtp);
 router.post('/reset-password', userController.resetPassword);
+router.post('/user/email', userController.verifyEmail);
 router.delete('/profile', verifyToken, userController.deleteUser);
 router.patch('/profile/password', verifyToken, userController.changePassword);
 router.patch('/profile/email', verifyToken, userController.changeEmail);
 router.patch('/profile/avatar', verifyToken, userController.changeAvatar);
-router.get('/steam', passport.authenticate('steam', { session: false }));
-router.post('/complete-steam', userController.completeSteamRegistration);
+
+//STEAM
+
+//Log in через Steam
+
 router.get(
-   '/steam/return',
-   passport.authenticate('steam', {
+   '/steam/login',
+   passport.authenticate('steam-login', { session: false })
+);
+
+router.get(
+   '/steam/login/return',
+   passport.authenticate('steam-login', {
       session: false,
       failureRedirect: `${process.env.CLIENT_URL}/login`,
    }),
-   userController.steamAuthCallback
+   userController.steamLoginCallback
 );
+
+//Sing in через Steam
+
+router.get(
+   '/steam/register',
+   passport.authenticate('steam-register', { session: false })
+);
+
+router.get(
+   '/steam/register/return',
+   passport.authenticate('steam-register', {
+      session: false,
+      failureRedirect: `${process.env.CLIENT_URL}/login`,
+   }),
+   userController.steamRegisterCallback
+);
+
+router.post('/complete-steam', userController.completeSteamRegistration);
 module.exports = router;

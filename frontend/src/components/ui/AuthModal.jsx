@@ -249,7 +249,8 @@ export const AuthModal = ({ onClose, onSuccess }) => {
       if (!isLogin) {
          setIsSteamBindOpen(true);
       } else {
-         const STEAM_AUTH_URL = `${API_URL}/steam`;
+         console.log('Все ок');
+         const STEAM_AUTH_URL = `${API_URL}/steam/login`;
          window.location.href = STEAM_AUTH_URL;
       }
    };

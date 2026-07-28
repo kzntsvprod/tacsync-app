@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios';
 import {
    X,
    Mail,
@@ -53,11 +54,22 @@ export const SteamBindModal = ({ isOpen, onClose }) => {
          return;
       }
 
-      setIsLoading(true);
+      try {
+         setIsLoading(true);
 
-      sessionStorage.setItem('pendingSteamEmail', formData.email);
-      sessionStorage.setItem('pendingSteamPassword', formData.password);
-      window.location.href = `${API_URL}/steam`;
+         await axios.post(`${API_URL}/user/email`, {
+            email: formData.email,
+         });
+
+         sessionStorage.setItem('pendingSteamEmail', formData.email);
+         sessionStorage.setItem('pendingSteamPassword', formData.password);
+         window.location.href = `${API_URL}/steam/register`;
+      } catch (err) {
+         setIsLoading(false);
+         const errorMessage =
+            err.response?.data?.message || 'Помилка під час перевірки пошти';
+         setError(errorMessage);
+      }
    };
 
    const togglePasswordVisibility = () => setShowPassword(!showPassword);
