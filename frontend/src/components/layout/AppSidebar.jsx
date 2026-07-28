@@ -24,7 +24,7 @@ export const AppSidebar = () => {
       { id: 'friends', icon: Users, label: 'Команда' },
    ];
 
-   const { user, logout, deleteUser, setUser } = useAuth();
+   const { user } = useAuth();
 
    return (
       <aside className="w-64 bg-[#050505] border-r border-white/5 flex flex-col h-screen sticky top-0 z-40">
@@ -95,11 +95,7 @@ export const AppSidebar = () => {
                      <img
                         src={user?.avatar || '/default-avatar.png'}
                         alt="User"
-                        className={`w-8 h-8 rounded-full object-cover transition-all ${
-                           isActive
-                              ? 'grayscale-0'
-                              : 'grayscale group-hover:grayscale-0'
-                        }`}
+                        className="w-8 h-8 rounded-full object-cover"
                      />
                      <div className="flex-1 overflow-hidden">
                         <p className="text-sm font-medium text-gray-200 truncate">

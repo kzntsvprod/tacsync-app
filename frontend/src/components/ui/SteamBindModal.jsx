@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import axios from 'axios';
 import {
    X,
    Mail,
@@ -74,7 +73,7 @@ export const SteamBindModal = ({ isOpen, onClose }) => {
 
             <button
                onClick={handleClose}
-               className="absolute top-6 right-6 z-20 text-gray-500 hover:text-white transition-colors p-1.5 bg-black/50 rounded-full backdrop-blur-md border border-white/10 hover:bg-white/10"
+               className="cursor-pointer absolute top-6 right-6 z-20 text-gray-500 hover:text-white transition-colors p-1.5 bg-black/50 rounded-full backdrop-blur-md border border-white/10 hover:bg-white/10"
             >
                <X className="w-4 h-4" />
             </button>
@@ -127,7 +126,7 @@ export const SteamBindModal = ({ isOpen, onClose }) => {
                      <button
                         type="button"
                         onClick={togglePasswordVisibility}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors focus:outline-none w-5 h-5 flex items-center justify-center z-10"
+                        className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors focus:outline-none w-5 h-5 flex items-center justify-center z-10"
                      >
                         <div className="relative w-4 h-4 flex items-center justify-center">
                            <EyeOff
@@ -151,7 +150,7 @@ export const SteamBindModal = ({ isOpen, onClose }) => {
                   <button
                      type="submit"
                      disabled={isLoading}
-                     className="w-full bg-white hover:bg-gray-200 active:scale-[0.98] text-black py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
+                     className="cursor-pointer w-full bg-white hover:bg-gray-200 active:scale-[0.98] text-black py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                      {isLoading ? (
                         <Loader2 className="w-5 h-5 animate-spin" />

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { AuthModal } from '../components/ui/AuthModal.jsx';
 import { TacsyncLogo } from '../components/ui/Icons.jsx';
@@ -25,12 +25,16 @@ import {
    Settings,
    ShieldCheck,
    Users,
+   AlertCircle,
+   X,
 } from 'lucide-react';
 
 export const LandingPage = () => {
    const [showAuthModal, setShowAuthModal] = useState(false);
+   const [authError, setAuthError] = useState(null);
    const { isAuthenticated } = useAuth();
    const navigate = useNavigate();
+   const [searchParams, setSearchParams] = useSearchParams();
 
    const containerRef = useRef(null);
    const progressLineRef = useRef(null);
@@ -49,6 +53,17 @@ export const LandingPage = () => {
       const clampedP = Math.max(0, Math.min(1, p));
       return outMin + clampedP * (outMax - outMin);
    };
+
+   useEffect(() => {
+      if (searchParams.get('error') === 'steam_account_not_found') {
+         setAuthError(
+            "Акаунт Steam не знайдено. Будь ласка, створіть профіль та прив'яжіть свій Steam перед входом."
+         );
+
+         searchParams.delete('error');
+         setSearchParams(searchParams, { replace: true });
+      }
+   }, [searchParams, setSearchParams]);
 
    useEffect(() => {
       let rafId;
@@ -163,7 +178,7 @@ export const LandingPage = () => {
                   </div>
                   <button
                      onClick={handleEnter}
-                     className="text-sm font-medium hover:opacity-70 transition-opacity flex items-center gap-2 pointer-events-auto"
+                     className="cursor-pointer text-sm font-medium hover:opacity-70 transition-opacity flex items-center gap-2 pointer-events-auto"
                   >
                      Увійти <ArrowRight className="w-4 h-4" />
                   </button>
@@ -542,7 +557,7 @@ export const LandingPage = () => {
                   </h2>
                   <button
                      onClick={handleEnter}
-                     className="group relative inline-flex items-center justify-center gap-3 bg-white text-black px-12 py-5 rounded-full text-lg font-semibold transition-all hover:bg-gray-200 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_60px_rgba(255,255,255,0.2)]"
+                     className="cursor-pointer group relative inline-flex items-center justify-center gap-3 bg-white text-black px-12 py-5 rounded-full text-lg font-semibold transition-all hover:bg-gray-200 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_60px_rgba(255,255,255,0.2)]"
                   >
                      Увійти в систему
                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -559,6 +574,21 @@ export const LandingPage = () => {
                   navigate('/app/dashboard');
                }}
             />
+         )}
+
+         {authError && (
+            <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[99999] animate-fade-in-up bg-red-900/40 border border-red-500/50 px-5 py-4 rounded-2xl flex items-center gap-4 shadow-[0_0_40px_rgba(239,68,68,0.2)] backdrop-blur-xl max-w-md w-[calc(100%-2rem)]">
+               <AlertCircle className="w-6 h-6 text-red-400 shrink-0" />
+               <p className="text-sm text-red-200 font-medium leading-tight flex-1">
+                  {authError}
+               </p>
+               <button
+                  onClick={() => setAuthError(null)}
+                  className="cursor-pointer text-red-400/70 hover:text-red-400 hover:bg-red-500/20 p-1.5 rounded-lg transition-colors"
+               >
+                  <X className="w-4 h-4" />
+               </button>
+            </div>
          )}
       </>
    );
