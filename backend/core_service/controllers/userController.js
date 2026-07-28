@@ -2,6 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/sendEmail');
 const axios = require('axios');
+const passport = require('passport');
 
 const SECRET_KEY = process.env.JWT_SECRET;
 const STEAM_KEY = process.env.STEAM_API_KEY;
@@ -634,5 +635,74 @@ exports.completeSteamRegistration = async (req, res) => {
    } catch (error) {
       console.error('Помилка завершення реєстрації:', error);
       res.status(500).json({ message: 'Не вдалося завершити реєстрацію' });
+   }
+};
+
+exports.steamLinkCallback = async (req, res) => {
+   try {
+      const steamId = req.user.steam_id;
+
+      const linkToken = jwt.sign(
+         { steam_id: steamId },
+         process.env.JWT_SECRET,
+         { expiresIn: '5m' }
+      );
+
+      return res.redirect(
+         `${process.env.CLIENT_URL}/app/profile?linkToken=${linkToken}`
+      );
+   } catch (error) {
+      console.error('Помилка привязки Steam_id:', error);
+      res.redirect(`${process.env.CLIENT_URL}/app/profile?error=steam_failed`);
+   }
+};
+
+exports.confirmSteamLink = async (req, res) => {
+   try {
+      const { linkToken } = req.body;
+
+      if (!linkToken) {
+         return res
+            .status(400)
+            .json({ message: "Відсутній токен для прив'язки Steam" });
+      }
+
+      const decoded = jwt.verify(linkToken, process.env.JWT_SECRET);
+      const steamId = decoded.steam_id;
+      const existingUser = await User.findOne({ steam_id: steamId });
+
+      if (
+         existingUser &&
+         existingUser._id.toString() !== req.user.userId.toString()
+      ) {
+         return res.status(400).json({
+            message:
+               "Цей акаунт Steam вже прив'язаний до іншого профілю TACSYNC!",
+         });
+      }
+
+      const user = await User.findById(req.user.userId);
+
+      user.steam_id = steamId;
+
+      await user.save();
+
+      return res.status(200).json({
+         steam_id: steamId,
+      });
+
+      res.status(200).json({
+         message: "Steam успішно прив'язано!",
+         user: updatedUser,
+      });
+   } catch (error) {
+      console.error("Помилка підтвердження прив'язки Steam:", error);
+      if (error.name === 'TokenExpiredError') {
+         return res
+            .status(400)
+            .json({ message: 'Час дії токена вийшов. Спробуйте ще раз.' });
+      }
+
+      res.status(500).json({ message: 'Недійсний токен або помилка сервера' });
    }
 };
