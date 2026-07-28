@@ -123,8 +123,6 @@ export const SettingsModal = ({
                { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            console.log(response.data.passwordChangedAt);
-
             setSuccessMsg(response.data.message);
             setTimeout(() => {
                onSuccess({

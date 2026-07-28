@@ -35,7 +35,6 @@ export const SteamAuthHandler = () => {
       const userParam = searchParams.get('user');
 
       if (token && userParam) {
-         // 2. Одразу ставимо прапорець в true
          hasProcessed.current = true;
 
          const user = JSON.parse(decodeURIComponent(userParam));

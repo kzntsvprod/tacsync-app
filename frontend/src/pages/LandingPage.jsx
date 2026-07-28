@@ -55,13 +55,32 @@ export const LandingPage = () => {
    };
 
    useEffect(() => {
-      if (searchParams.get('error') === 'steam_account_not_found') {
-         setAuthError(
-            "Акаунт Steam не знайдено. Будь ласка, створіть профіль та прив'яжіть свій Steam перед входом."
-         );
-
-         searchParams.delete('error');
-         setSearchParams(searchParams, { replace: true });
+      switch (searchParams.get('error')) {
+         case 'sing_in_failed':
+            setAuthError(
+               'Помилка реєстрація через Steam. Спробуйте зареєструватися іншим способом'
+            );
+            searchParams.delete('error');
+            setSearchParams(searchParams, { replace: true });
+            break;
+         case 'login_failed':
+            setAuthError(
+               'Помилка входу до акаунту через Steam. Спробуйте увійти іншим способом'
+            );
+            searchParams.delete('error');
+            setSearchParams(searchParams, { replace: true });
+            break;
+         case 'user_exist':
+            setAuthError('Користувач уже існує за цим Steam акаунтом');
+            searchParams.delete('error');
+            setSearchParams(searchParams, { replace: true });
+            break;
+         case 'user_not_found':
+            setAuthError('Користувача не знайдено');
+            searchParams.delete('error');
+            setSearchParams(searchParams, { replace: true });
+            break;
+         default:
       }
    }, [searchParams, setSearchParams]);
 
